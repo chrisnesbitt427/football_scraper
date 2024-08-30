@@ -1,0 +1,34 @@
+#CREATE OR REPLACE TABLE `my-project-1706650764881.Bundesliga.OUT`  AS
+
+SELECT 
+  a.Season,
+  a.Round,
+  a.`Home Side`,
+  a.`Away Side`,
+  CAST(REGEXP_EXTRACT(a.Round, r'\d+$') AS INT64) as round_num,
+  a.`home_Gls`,
+  a.`away_Gls`,
+  a.`5_game_home_goals` - a.`5_game_away_goals` as goals_diff,
+  a.`5_game_home_shots` - a.`5_game_away_shots` as shots_diff,
+  a.`5_game_home_SoT` -  a.`5_game_away_SoT` as SoT_diff,
+  a.`5_game_home_tackles` -  a.`5_game_away_tackles` as tackles_diff,
+  a.`5_game_home_touches` -  a.`5_game_away_touches` as touches_diff,
+  a.`5_game_home_xG` -   a.`5_game_away_xG` as xG_diff,
+  b.Rank as home_side_rank,
+  b.`5_game_points` as home_side_rolling_points,
+  b.`5_game_home_points_av` as home_side_rolling_points_home,
+  c.Rank as away_side_rank,
+  c.`5_game_points` as away_side_rolling_points,
+  c.`5_game_away_points_av` as away_side_rolling_points_away,
+  CASE WHEN a.`home_Gls` > a.`away_Gls` THEN 1 ELSE 0 END as win_loss
+
+FROM `my-project-1706650764881.Bundesliga.All_match_data_final` a
+
+LEFT JOIN `my-project-1706650764881.Bundesliga.Points_all_variables` b
+ON a.Season = b.Season AND a.Round = b.Round AND a.`Home Side` = b.Side
+
+LEFT JOIN `my-project-1706650764881.Bundesliga.Points_all_variables` c
+ON a.Season = c.Season AND a.Round = c.Round AND a.`Away Side` = c.Side
+
+
+ORDER BY a.SEASON, CAST(REGEXP_EXTRACT(a.Round, r'\d+$') AS INT64), a.`Home Side`
